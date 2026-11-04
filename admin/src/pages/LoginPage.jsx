@@ -10,7 +10,7 @@ const DEMO = { email: 'control@raahat.demo', password: 'Raahat@123' };
 export default function LoginPage() {
   const { token, booting, login } = useAdmin();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(DEMO.email);
+  const [email, setEmail] = useState(import.meta.env.DEV ? DEMO.email : '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -130,28 +130,30 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-5 rounded-xl border border-line bg-elevated p-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Demo control room</p>
-              <button
-                type="button"
-                className="text-[11px] font-bold text-accent hover:underline"
-                onClick={() => {
-                  setEmail(DEMO.email);
-                  setPassword(DEMO.password);
-                  setError('');
-                }}
-              >
-                Use demo login
-              </button>
+          {import.meta.env.DEV && (
+            <div className="mt-5 rounded-xl border border-line bg-elevated p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Demo control room</p>
+                <button
+                  type="button"
+                  className="text-[11px] font-bold text-accent hover:underline"
+                  onClick={() => {
+                    setEmail(DEMO.email);
+                    setPassword(DEMO.password);
+                    setError('');
+                  }}
+                >
+                  Use demo login
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-body">
+                {DEMO.email} <span className="text-muted">/</span> {DEMO.password}
+              </p>
+              <p className="mt-1 text-[10px] leading-relaxed text-muted">
+                Development-only shortcut for the seeded in-memory database.
+              </p>
             </div>
-            <p className="mt-1 text-xs text-body">
-              {DEMO.email} <span className="text-muted">/</span> {DEMO.password}
-            </p>
-            <p className="mt-1 text-[10px] leading-relaxed text-muted">
-              Dummy demo account on the in-memory network. Never use this password in production.
-            </p>
-          </div>
+          )}
         </section>
       </div>
     </div>
