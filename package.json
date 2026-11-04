@@ -1,0 +1,29 @@
+{
+  "name": "raahat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Raahat - emergency hospital finder for India",
+  "workspaces": [
+    "client",
+    "server",
+    "admin"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web,admin -c red,cyan,magenta \"npm:dev:server\" \"npm:dev:client\" \"npm:dev:admin\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:client": "npm --workspace client run dev",
+    "dev:admin": "npm --workspace admin run dev",
+    "build": "npm --workspace client run build && npm --workspace admin run build",
+    "build:client": "npm --workspace client run build",
+    "build:admin": "npm --workspace admin run build",
+    "start": "npm --workspace server run start",
+    "seed": "npm --workspace server run seed",
+    "test": "npm --workspace server test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

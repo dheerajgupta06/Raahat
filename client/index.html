@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Raahat — find the nearest verified emergency hospital in India with live ICU beds, oxygen status and one-tap reception, emergency and ambulance numbers. Emergency me sabse pehle Raahat." />
+    <meta name="theme-color" content="#040812" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Raahat — Emergency Hospital Finder | Emergency me sabse pehle Raahat</title>
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/pwa-192.png" />
+    <link rel="preconnect" href="https://server.arcgisonline.com" crossorigin />
+    <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
+    <script>
+      // Apply saved appearance before paint to avoid a theme flash.
+      try {
+        var storedTheme = localStorage.getItem('raahat.theme');
+        try {
+          storedTheme = JSON.parse(storedTheme);
+        } catch (parseError) {
+          /* legacy value */
+        }
+        document.documentElement.dataset.theme = storedTheme === 'light' ? 'light' : 'dark';
+        var storedLarge = localStorage.getItem('raahat.largeText');
+        try {
+          storedLarge = JSON.parse(storedLarge);
+        } catch (parseError) {
+          /* legacy value */
+        }
+        if (storedLarge === true || storedLarge === '1') {
+          document.documentElement.classList.add('large-text');
+        }
+      } catch (error) {
+        /* storage may be unavailable in private mode */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="font-family: sans-serif; padding: 24px; color: #e2e8f0; background: #040812; min-height: 100vh">
+        <h1>Raahat</h1>
+        <p>Raahat needs JavaScript to find nearby emergency hospitals. In a critical emergency call 112 immediately.</p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

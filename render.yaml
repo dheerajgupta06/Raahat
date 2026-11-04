@@ -1,0 +1,75 @@
+# Raahat — Render Blueprint
+#
+# Usage:
+#   1. Commit this file and push the repo to GitHub.
+#   2. Render Dashboard -> New + -> Blueprint -> select this repo.
+#   3. Set MONGODB_URI when prompted (MongoDB Atlas connection string).
+#   4. If any service URL gets a different suffix than the values below,
+#      update VITE_API_URL / CLIENT_ORIGINS / VITE_*_SITE_URL and redeploy.
+#
+# Free web services sleep after ~15 minutes of inactivity and their filesystem
+# is ephemeral (uploaded registration certificates are lost on restart/redeploy).
+
+services:
+  - type: web
+    name: raahat-api
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install
+    startCommand: npm --workspace server start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: DB_AUTO_SEED
+        value: "true"
+      - key: CLIENT_ORIGINS
+        value: https://raahat.onrender.com,https://raahat-control.onrender.com
+    # Persistent certificate storage requires a paid instance:
+    # disk:
+    #   name: raahat-uploads
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # envVars:
+    #   - key: UPLOAD_DIR
+    #     value: /var/data/uploads
+
+  - type: web
+    name: raahat
+    runtime: static
+    branch: main
+    buildCommand: npm install && npm run build:client
+    staticPublishPath: client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://raahat-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  - type: web
+    name: raahat-control
+    runtime: static
+    branch: main
+    buildCommand: npm install && npm run build:admin
+    staticPublishPath: admin/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://raahat-api.onrender.com
+      - key: VITE_PUBLIC_SITE_URL
+        value: https://raahat.onrender.com
+      - key: VITE_STAFF_SITE_URL
+        value: https://raahat.onrender.com/login
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
