@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Render serves .webmanifest as binary/octet-stream, which breaks PWABuilder
+      // detection; .json is served with a JSON content type.
+      manifestFilename: 'manifest.json',
       includeAssets: ['icons/icon.svg', 'icons/pwa-192.png', 'icons/pwa-512.png', 'icons/maskable-512.png'],
       manifest: {
         name: 'Raahat Control — Hospital Network',
