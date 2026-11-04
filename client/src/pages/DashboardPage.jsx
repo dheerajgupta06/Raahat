@@ -244,10 +244,15 @@ export function DashboardPage() {
           setAdmin(response.data.admin);
           applyServerHospital(response.data.hospital);
         })
-        .catch(() => {});
+        .catch((error) => {
+          if (error?.status === 401 || error?.status === 404) {
+            logout();
+            navigate('/login', { replace: true });
+          }
+        });
     }, 30000);
     return () => window.clearInterval(timer);
-  }, [auth?.token, approvalPending, applyServerHospital]);
+  }, [auth?.token, approvalPending, applyServerHospital, logout, navigate]);
 
   const updateBed = (key, field, value) => {
     const number = Math.max(0, Number(value) || 0);

@@ -33,7 +33,10 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/') && url.pathname !== '/api/auth/login',
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith('/api/') &&
+              url.pathname !== '/api/auth/login' &&
+              url.pathname !== '/api/auth/me',
             handler: 'NetworkFirst',
             options: {
               cacheName: 'raahat-api',
