@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.raahat.control",
+        "sha256_cert_fingerprints": ["86:A1:8A:49:16:F4:E4:6F:61:4F:7D:16:E8:4C:DD:FA:11:EA:A9:D5:F5:07:39:E7:79:95:98:A2:65:EB:34:34"]
+      }
+    }]
