@@ -25,12 +25,14 @@ import { formatDate, formatFileSize, timeAgo } from '../lib/format.js';
 const TABS = [
   { id: 'pending', label: 'Pending', icon: Clock3 },
   { id: 'verified', label: 'Approved', icon: CheckCircle2 },
+  { id: 'rejected', label: 'Rejected', icon: XCircle },
   { id: 'all', label: 'All', icon: ShieldCheck },
 ];
 
 const EMPTY_COPY = {
   pending: ['Queue is clear', 'No certificate is waiting for review right now.'],
   verified: ['No approvals yet', 'Approved hospitals will be listed here.'],
+  rejected: ['No rejections yet', 'Rejected registrations are archived here with their reason.'],
   all: ['No registrations yet', 'Hospitals that upload a certificate will show up here.'],
 };
 
@@ -143,11 +145,67 @@ function ApplicationCard({ hospital, onView, onDecision }) {
   );
 }
 
+function RejectedCard({ record }) {
+  const location = [record.city, record.state].filter(Boolean).join(', ');
+
+  return (
+    <article className="panel p-3.5">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-danger/10 text-danger ring-1 ring-danger/25">
+          <XCircle size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="min-w-0 break-words text-sm font-black leading-snug text-body">
+              {record.hospitalName}
+            </h3>
+            <StatusChip status="rejected" />
+          </div>
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted">
+            <span className="inline-flex items-center gap-1">
+              <MapPin size={11} /> {location || 'Location not recorded'}
+            </span>
+            {record.type && (
+              <>
+                <span>·</span>
+                <span>{record.type}</span>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2 rounded-xl bg-elevated/60 p-2.5 text-[11px] sm:grid-cols-2">
+        <p className="flex min-w-0 items-center gap-1.5 text-muted">
+          <User size={12} className="shrink-0" />
+          <span className="truncate text-body">{record.applicant?.name || 'Hospital administrator'}</span>
+        </p>
+        <p className="flex min-w-0 items-center gap-1.5 text-muted">
+          <Mail size={12} className="shrink-0" />
+          <span className="truncate">{record.applicant?.email || '—'}</span>
+        </p>
+      </div>
+
+      <p className="mt-2 rounded-lg border border-danger/25 bg-danger/5 px-2.5 py-1.5 text-[11px] text-danger">
+        <span className="font-bold">Reason:</span> {record.reason}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2.5">
+        <p className="text-[10px] text-muted">
+          Rejected {formatDate(record.rejectedAt)}
+          {record.rejectedBy ? ` by ${record.rejectedBy}` : ''}
+        </p>
+        <span className="text-[10px] text-muted">Certificate and hospital record deleted</span>
+      </div>
+    </article>
+  );
+}
+
 export default function ApprovalsPage() {
   const { token, liveTick } = useAdmin();
   const [status, setStatus] = useState('pending');
   const [items, setItems] = useState([]);
-  const [counts, setCounts] = useState({ pending: 0, verified: 0, all: 0 });
+  const [counts, setCounts] = useState({ pending: 0, verified: 0, rejected: 0, all: 0 });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -162,7 +220,7 @@ export default function ApprovalsPage() {
       try {
         const result = await api.registrations(token, status);
         setItems(result.data || []);
-        setCounts(result.meta?.counts || { pending: 0, verified: 0, all: 0 });
+        setCounts(result.meta?.counts || { pending: 0, verified: 0, rejected: 0, all: 0 });
         setError('');
       } catch (loadError) {
         setError(loadError.message || 'Could not load the approval queue');
@@ -192,7 +250,7 @@ export default function ApprovalsPage() {
           <p className="label-xs">Verification</p>
           <h2 className="text-xl font-black tracking-tight text-body">Hospital registrations</h2>
           <p className="text-[11px] text-muted">
-            {counts.pending} pending · {counts.verified} approved
+            {counts.pending} pending · {counts.verified} approved · {counts.rejected} rejected
           </p>
         </div>
         <button
@@ -206,7 +264,7 @@ export default function ApprovalsPage() {
         </button>
       </div>
 
-      <div className="thin-scrollbar -mx-1 grid grid-cols-3 gap-1.5 px-1 pb-1 sm:flex sm:gap-2 sm:overflow-x-auto">
+      <div className="thin-scrollbar -mx-1 grid grid-cols-4 gap-1.5 px-1 pb-1 sm:flex sm:gap-2 sm:overflow-x-auto">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const count = counts[tab.id] ?? 0;
@@ -254,14 +312,18 @@ export default function ApprovalsPage() {
       )}
 
       <div className="grid gap-3 lg:grid-cols-2">
-        {items.map((hospital) => (
-          <ApplicationCard
-            key={hospital.id}
-            hospital={hospital}
-            onView={() => setDocTarget(hospital)}
-            onDecision={(decision) => setReviewTarget({ hospital, decision })}
-          />
-        ))}
+        {items.map((hospital) =>
+          status === 'rejected' ? (
+            <RejectedCard key={hospital.id} record={hospital} />
+          ) : (
+            <ApplicationCard
+              key={hospital.id}
+              hospital={hospital}
+              onView={() => setDocTarget(hospital)}
+              onDecision={(decision) => setReviewTarget({ hospital, decision })}
+            />
+          )
+        )}
       </div>
 
       {items.length > 0 && (

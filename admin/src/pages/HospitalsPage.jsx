@@ -25,7 +25,6 @@ const FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'pending', label: 'Pending' },
   { id: 'verified', label: 'Approved' },
-  { id: 'rejected', label: 'Rejected' },
   { id: 'unregistered', label: 'No certificate' },
 ];
 

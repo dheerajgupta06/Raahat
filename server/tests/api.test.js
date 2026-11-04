@@ -462,6 +462,18 @@ test('control room approves and rejects registrations with notes', async () => {
   assert.equal(rejected.body.data, null);
   assert.match(rejected.body.message, /rejected and removed/i);
 
+  const rejectedList = await api
+    .get('/api/admin/registrations')
+    .query({ status: 'rejected' })
+    .set('Authorization', `Bearer ${adminToken}`);
+  assert.equal(rejectedList.status, 200);
+  const archived = rejectedList.body.data.find((entry) => entry.hospitalName === 'Test Hill Hospital');
+  assert.ok(archived);
+  assert.equal(archived.hospitalId, rejectedId);
+  assert.equal(archived.reason, 'Certificate scan is unreadable');
+  assert.equal(archived.applicant.email, 'rejecthospital@raahat.test');
+  assert.ok(rejectedList.body.meta.counts.rejected >= 1);
+
   const allQueue = await api
     .get('/api/admin/registrations')
     .query({ status: 'all' })

@@ -239,16 +239,16 @@ Registration requires admin name/email/password (8–72 chars) and hospital name
 | `POST` | `/admin/login` | `{ email, password }` | Control-room sign-in; hospital accounts receive `403` |
 | `GET` | `/admin/me` | — | Current operator |
 | `GET` | `/admin/overview` | — | Network stats, approval counts and recent registrations |
-| `GET` | `/admin/registrations` | `status` (`pending`/`verified`/`rejected`/`all`, default `pending`) | Registration queue with applicant and certificate metadata |
+| `GET` | `/admin/registrations` | `status` (`pending`/`verified`/`rejected`/`all`, default `pending`) | Registration queue with applicant and certificate metadata. `rejected` returns the archived rejection history |
 | `GET` | `/admin/registrations/:id/document` | — | Private certificate download for review |
-| `POST` | `/admin/registrations/:id/review` | `{ decision: "approve" \| "reject", note? }` | Approve a certificate, or reject it. Rejection requires a note (4–400 chars) and permanently deletes the hospital, its applicant account and the uploaded certificate |
-| `GET` | `/admin/hospitals` | `q`, `status` (`all`/`pending`/`verified`/`rejected`/`unregistered`) | Search the registry |
+| `POST` | `/admin/registrations/:id/review` | `{ decision: "approve" \| "reject", note? }` | Approve a certificate, or reject it. Rejection requires a note (4–400 chars), deletes the hospital, its applicant account and the uploaded certificate, and archives the decision in the rejected list |
+| `GET` | `/admin/hospitals` | `q`, `status` (`all`/`pending`/`verified`/`unregistered`) | Search the registry |
 | `POST` | `/admin/hospitals/:id/verify-contacts` | — | Mark published contact lines verified (public badge for 30 days) |
 | `GET` | `/admin/notifications` | `limit` (1–100, default 30) | Alerts with unread count |
 | `POST` | `/admin/notifications/:id/read` | — | Mark one alert read |
 | `POST` | `/admin/notifications/read-all` | — | Mark every alert read |
 
-Approving or rejecting a registration never exposes the receptionist's name or alternate line; the control-room serializer also omits those private fields.
+Approving or rejecting a registration never exposes the receptionist's name or alternate line; the control-room serializer also omits those private fields. A rejected registration leaves an audit entry (hospital name, city, applicant email, reason, operator and timestamp) in the Rejected list; the certificate and contact details are deleted with the hospital.
 
 ### Realtime
 

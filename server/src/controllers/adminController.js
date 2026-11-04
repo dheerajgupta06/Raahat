@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import Admin from '../models/Admin.js';
 import Hospital from '../models/Hospital.js';
 import Notification from '../models/Notification.js';
+import RejectedRegistration from '../models/RejectedRegistration.js';
 import { asyncHandler, httpError } from '../utils/http.js';
 import { issueToken } from '../middleware/auth.js';
 import { broadcastHospitalUpdate } from '../services/realtime.js';
@@ -28,19 +29,21 @@ const sumBeds = (hospitals, field) =>
   );
 
 async function registrationCounts() {
-  const [rows, unregistered] = await Promise.all([
+  const [rows, unregistered, rejected] = await Promise.all([
     Hospital.aggregate([
       { $match: { 'registration.document': { $ne: null } } },
       { $group: { _id: '$registration.status', count: { $sum: 1 } } },
     ]),
     Hospital.countDocuments({ registration: null }),
+    RejectedRegistration.countDocuments(),
   ]);
 
   const counts = { pending: 0, verified: 0, rejected: 0, unregistered };
   for (const row of rows) {
-    if (row._id in counts) counts[row._id] = row.count;
+    if (row._id === 'pending' || row._id === 'verified') counts[row._id] = row.count;
   }
-  counts.all = counts.pending + counts.verified + counts.rejected;
+  counts.rejected = rejected;
+  counts.all = counts.pending + counts.verified;
   return counts;
 }
 
@@ -111,6 +114,20 @@ export const getOverview = asyncHandler(async (req, res) => {
 
 export const listRegistrations = asyncHandler(async (req, res) => {
   const { status } = req.validated.query;
+
+  if (status === 'rejected') {
+    const [rejected, counts] = await Promise.all([
+      RejectedRegistration.find().sort({ rejectedAt: -1 }).limit(200),
+      registrationCounts(),
+    ]);
+    res.json({
+      success: true,
+      data: rejected.map((record) => record.toJSONPayload()),
+      meta: { count: rejected.length, status, counts },
+    });
+    return;
+  }
+
   const filter = { 'registration.document': { $ne: null } };
   if (status !== 'all') filter['registration.status'] = status;
 
@@ -142,6 +159,27 @@ export const reviewRegistration = asyncHandler(async (req, res) => {
   const approved = decision === 'approve';
 
   if (!approved) {
+    const applicant = hospital.adminId;
+    await RejectedRegistration.findOneAndUpdate(
+      { hospital: hospital._id },
+      {
+        $set: {
+          hospitalName: hospital.name,
+          city: hospital.city || '',
+          state: hospital.state || '',
+          type: hospital.type || '',
+          applicantName: applicant?.name || '',
+          applicantEmail: applicant?.email || '',
+          documentName: hospital.registration.document.originalName || '',
+          reason: note,
+          rejectedBy: req.admin.name,
+          rejectedById: req.admin._id,
+          rejectedAt: new Date(),
+        },
+      },
+      { upsert: true }
+    );
+
     try {
       await createAdminNotification({
         type: 'registration_rejected',
