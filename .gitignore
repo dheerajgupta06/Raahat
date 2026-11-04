@@ -28,5 +28,8 @@ Thumbs.db
 test-output.txt
 *.tsbuildinfo
 
+# Locally built Android packages
+release/
+
 # Uploaded registration certificates (private)
 server/uploads/
