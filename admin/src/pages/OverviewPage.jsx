@@ -287,7 +287,7 @@ export default function OverviewPage() {
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted">
           <span>{bedRatio}% of network beds free</span>
-          <span>{stats?.rejected ?? 0} rejected certificates</span>
+          <span>{stats?.pending ?? 0} certificates pending review</span>
           <span>{stats?.unregistered ?? 0} hospitals without a certificate</span>
         </div>
       </section>

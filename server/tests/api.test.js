@@ -404,22 +404,6 @@ test('control room approves and rejects registrations with notes', async () => {
     .send({ decision: 'reject' });
   assert.equal(missingNote.status, 400);
 
-  const rejected = await api
-    .post(`/api/admin/registrations/${application.id}/review`)
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({ decision: 'reject', note: 'Certificate scan is unreadable' });
-  assert.equal(rejected.status, 200);
-  assert.equal(rejected.body.data.registration.status, 'rejected');
-  assert.equal(rejected.body.data.registration.note, 'Certificate scan is unreadable');
-  assert.ok(rejected.body.data.registration.reviewedAt);
-
-  const owner = await api
-    .post('/api/auth/login')
-    .send({ email: 'newhospital@raahat.test', password: 'StrongPass123' });
-  assert.equal(owner.status, 200);
-  assert.equal(owner.body.data.hospital.registration.status, 'rejected');
-  assert.equal(owner.body.data.hospital.registration.note, 'Certificate scan is unreadable');
-
   const approved = await api
     .post(`/api/admin/registrations/${application.id}/review`)
     .set('Authorization', `Bearer ${adminToken}`)
@@ -427,10 +411,81 @@ test('control room approves and rejects registrations with notes', async () => {
   assert.equal(approved.status, 200);
   assert.equal(approved.body.data.registration.status, 'verified');
 
+  const owner = await api
+    .post('/api/auth/login')
+    .send({ email: 'newhospital@raahat.test', password: 'StrongPass123' });
+  assert.equal(owner.status, 200);
+
   const ownerAfter = await api
     .get('/api/hospitals/me')
     .set('Authorization', `Bearer ${owner.body.token}`);
   assert.equal(ownerAfter.body.data.hospital.registration.status, 'verified');
+
+  const rejectPayload = {
+    admin: {
+      name: 'Rejected Applicant',
+      email: 'rejecthospital@raahat.test',
+      password: 'StrongPass123',
+    },
+    hospital: {
+      name: 'Test Hill Hospital',
+      type: 'Private',
+      address: '44 Reject Road, Sector 21',
+      city: 'Noida',
+      state: 'Uttar Pradesh',
+      pincode: '201301',
+      lat: 28.59,
+      lng: 77.35,
+      specialties: ['General Medicine'],
+      is24x7: false,
+      ambulanceAvailable: false,
+      contacts: {
+        reception: { phone: '0120-0000088' },
+        emergencyWard: { phone: '0120-0000087' },
+      },
+    },
+  };
+
+  const rejectedApplication = await api
+    .post('/api/auth/register')
+    .field('admin', JSON.stringify(rejectPayload.admin))
+    .field('hospital', JSON.stringify(rejectPayload.hospital))
+    .attach('document', sampleDocument, { filename: 'reject.png', contentType: 'image/png' });
+  assert.equal(rejectedApplication.status, 201);
+  const rejectedId = rejectedApplication.body.data.hospital.id;
+
+  const rejected = await api
+    .post(`/api/admin/registrations/${rejectedId}/review`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ decision: 'reject', note: 'Certificate scan is unreadable' });
+  assert.equal(rejected.status, 200);
+  assert.equal(rejected.body.data, null);
+  assert.match(rejected.body.message, /rejected and removed/i);
+
+  const allQueue = await api
+    .get('/api/admin/registrations')
+    .query({ status: 'all' })
+    .set('Authorization', `Bearer ${adminToken}`);
+  assert.equal(
+    allQueue.body.data.some((hospital) => hospital.id === rejectedId),
+    false
+  );
+
+  const deletedReview = await api
+    .post(`/api/admin/registrations/${rejectedId}/review`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ decision: 'approve' });
+  assert.equal(deletedReview.status, 404);
+
+  const deletedOwner = await api
+    .post('/api/auth/login')
+    .send({ email: 'rejecthospital@raahat.test', password: 'StrongPass123' });
+  assert.equal(deletedOwner.status, 401);
+
+  const deletedDocument = await api
+    .get(`/api/admin/registrations/${rejectedId}/document`)
+    .set('Authorization', `Bearer ${adminToken}`);
+  assert.equal(deletedDocument.status, 404);
 
   const notifications = await api
     .get('/api/admin/notifications')

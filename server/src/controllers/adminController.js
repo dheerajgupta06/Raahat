@@ -5,7 +5,7 @@ import Notification from '../models/Notification.js';
 import { asyncHandler, httpError } from '../utils/http.js';
 import { issueToken } from '../middleware/auth.js';
 import { broadcastHospitalUpdate } from '../services/realtime.js';
-import { resolveRegistrationDocument } from '../services/registrationStorage.js';
+import { resolveRegistrationDocument, removeRegistrationDocument } from '../services/registrationStorage.js';
 import { serializeHospitalForAdmin } from '../services/serializers.js';
 import {
   createAdminNotification,
@@ -140,7 +140,35 @@ export const reviewRegistration = asyncHandler(async (req, res) => {
   }
 
   const approved = decision === 'approve';
-  hospital.registration.status = approved ? 'verified' : 'rejected';
+
+  if (!approved) {
+    try {
+      await createAdminNotification({
+        type: 'registration_rejected',
+        title: 'Hospital registration rejected',
+        message: `${hospital.name} (${hospital.city}) was rejected and removed. Reason: ${note}`,
+        hospital,
+        actor: req.admin.name,
+      });
+    } catch (error) {
+      console.error('[notifications] failed to record review:', error.message);
+    }
+
+    await removeRegistrationDocument(hospital.registration.document.filename);
+    if (hospital.adminId) {
+      await Admin.deleteOne({ _id: hospital.adminId._id || hospital.adminId });
+    }
+    await hospital.deleteOne();
+
+    res.json({
+      success: true,
+      data: null,
+      message: 'Hospital registration rejected and removed',
+    });
+    return;
+  }
+
+  hospital.registration.status = 'verified';
   hospital.registration.reviewedAt = new Date();
   hospital.registration.reviewedBy = req.admin._id;
   hospital.registration.note = note;
@@ -148,11 +176,9 @@ export const reviewRegistration = asyncHandler(async (req, res) => {
 
   try {
     await createAdminNotification({
-      type: approved ? 'registration_approved' : 'registration_rejected',
-      title: approved ? 'Hospital registration approved' : 'Hospital registration rejected',
-      message: approved
-        ? `${hospital.name} (${hospital.city}) cleared review. Certificate marked verified.`
-        : `${hospital.name} (${hospital.city}) was sent back. Reason: ${note}`,
+      type: 'registration_approved',
+      title: 'Hospital registration approved',
+      message: `${hospital.name} (${hospital.city}) cleared review. Certificate marked verified.`,
       hospital,
       actor: req.admin.name,
     });
@@ -163,7 +189,7 @@ export const reviewRegistration = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: serializeHospitalForAdmin(hospital, hospital.adminId),
-    message: approved ? 'Hospital registration approved' : 'Hospital registration rejected',
+    message: 'Hospital registration approved',
   });
 });
 

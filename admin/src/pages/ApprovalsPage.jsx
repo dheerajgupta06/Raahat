@@ -25,14 +25,12 @@ import { formatDate, formatFileSize, timeAgo } from '../lib/format.js';
 const TABS = [
   { id: 'pending', label: 'Pending', icon: Clock3 },
   { id: 'verified', label: 'Approved', icon: CheckCircle2 },
-  { id: 'rejected', label: 'Rejected', icon: XCircle },
   { id: 'all', label: 'All', icon: ShieldCheck },
 ];
 
 const EMPTY_COPY = {
   pending: ['Queue is clear', 'No certificate is waiting for review right now.'],
   verified: ['No approvals yet', 'Approved hospitals will be listed here.'],
-  rejected: ['No rejections', 'Certificates sent back will appear here with the reason.'],
   all: ['No registrations yet', 'Hospitals that upload a certificate will show up here.'],
 };
 
@@ -149,7 +147,7 @@ export default function ApprovalsPage() {
   const { token, liveTick } = useAdmin();
   const [status, setStatus] = useState('pending');
   const [items, setItems] = useState([]);
-  const [counts, setCounts] = useState({ pending: 0, verified: 0, rejected: 0, all: 0 });
+  const [counts, setCounts] = useState({ pending: 0, verified: 0, all: 0 });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -164,7 +162,7 @@ export default function ApprovalsPage() {
       try {
         const result = await api.registrations(token, status);
         setItems(result.data || []);
-        setCounts(result.meta?.counts || { pending: 0, verified: 0, rejected: 0, all: 0 });
+        setCounts(result.meta?.counts || { pending: 0, verified: 0, all: 0 });
         setError('');
       } catch (loadError) {
         setError(loadError.message || 'Could not load the approval queue');
@@ -194,7 +192,7 @@ export default function ApprovalsPage() {
           <p className="label-xs">Verification</p>
           <h2 className="text-xl font-black tracking-tight text-body">Hospital registrations</h2>
           <p className="text-[11px] text-muted">
-            {counts.pending} pending · {counts.verified} approved · {counts.rejected} rejected
+            {counts.pending} pending · {counts.verified} approved
           </p>
         </div>
         <button
@@ -208,7 +206,7 @@ export default function ApprovalsPage() {
         </button>
       </div>
 
-      <div className="thin-scrollbar -mx-1 grid grid-cols-4 gap-1.5 px-1 pb-1 sm:flex sm:gap-2 sm:overflow-x-auto">
+      <div className="thin-scrollbar -mx-1 grid grid-cols-3 gap-1.5 px-1 pb-1 sm:flex sm:gap-2 sm:overflow-x-auto">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const count = counts[tab.id] ?? 0;

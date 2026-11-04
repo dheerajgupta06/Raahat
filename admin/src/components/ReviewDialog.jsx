@@ -20,7 +20,9 @@ export default function ReviewDialog({ hospital, decision, onClose, onDone }) {
       const result = await api.review(token, hospital.id, decision, note.trim());
       pushToast({
         title: result.message,
-        message: `${hospital.name} is now ${reject ? 'rejected' : 'approved'}.`,
+        message: reject
+          ? `${hospital.name} was rejected and removed from the network.`
+          : `${hospital.name} is now approved.`,
         tone: reject ? 'danger' : 'ok',
       });
       await refreshPendingApprovals();
@@ -64,8 +66,8 @@ export default function ReviewDialog({ hospital, decision, onClose, onDone }) {
 
         <p className="mt-4 text-xs leading-relaxed text-muted">
           {reject
-            ? 'The hospital will see this as rejected and can contact support. Add a clear reason so the team can fix the submission.'
-            : 'The hospital will be marked as approved so it can operate on the public network. You can still reject it later from the queue.'}
+            ? 'The hospital, its sign-in account and the uploaded certificate will be permanently deleted. Add a clear reason for the operator log.'
+            : 'The hospital will be marked as approved so it can operate on the public network.'}
         </p>
 
         <label className="mt-4 block">

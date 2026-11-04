@@ -32,7 +32,7 @@ services:
       - key: DB_AUTO_SEED
         value: "true"
       - key: CLIENT_ORIGINS
-        value: https://raahat.onrender.com,https://raahat-control.onrender.com
+        value: https://raahat-5oj0.onrender.com,https://raahat-control.onrender.com
     # Persistent certificate storage requires a paid instance:
     # disk:
     #   name: raahat-uploads
@@ -66,9 +66,9 @@ services:
       - key: VITE_API_URL
         value: https://raahat-api.onrender.com
       - key: VITE_PUBLIC_SITE_URL
-        value: https://raahat.onrender.com
+        value: https://raahat-5oj0.onrender.com
       - key: VITE_STAFF_SITE_URL
-        value: https://raahat.onrender.com/login
+        value: https://raahat-5oj0.onrender.com/login
     routes:
       - type: rewrite
         source: /*
