@@ -320,7 +320,7 @@ test('control room login is restricted to super admins', async () => {
 
   const res = await api
     .post('/api/admin/login')
-    .send({ email: 'control@raahat.demo', password: 'Raahat@123' });
+    .send({ email: 'control@raahat.demo', password: 'Raahat#Control2026' });
   assert.equal(res.status, 200);
   assert.ok(res.body.token);
   assert.equal(res.body.data.admin.role, 'super_admin');

@@ -15,6 +15,7 @@ export async function seedDatabase({ reset = true } = {}) {
 
   const entries = buildSeedHospitals();
   const passwordHash = await bcrypt.hash('Raahat@123', 10);
+  const controlPasswordHash = await bcrypt.hash('Raahat#Control2026', 10);
 
   const created = {
     hospitals: 0,
@@ -22,12 +23,13 @@ export async function seedDatabase({ reset = true } = {}) {
     demoEmail: 'demo@raahat.demo',
     demoPassword: 'Raahat@123',
     controlEmail: 'control@raahat.demo',
+    controlPassword: 'Raahat#Control2026',
   };
 
   await Admin.create({
     name: 'Raahat Control Room',
     email: created.controlEmail,
-    passwordHash,
+    passwordHash: controlPasswordHash,
     designation: 'Network operations',
     role: 'super_admin',
     hospital: null,

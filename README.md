@@ -117,7 +117,7 @@ Every seeded hospital has an account (`hospital2@raahat.demo` … `hospital25@ra
 
 ```
 Email:    control@raahat.demo
-Password: Raahat@123
+Password: Raahat#Control2026
 ```
 
 Open <http://localhost:5174>, sign in, then submit a hospital registration from the public site. The application lands in **Approvals** immediately, a realtime alert appears on the Overview and Alerts tabs, and approving it updates the hospital dashboard. Use **Enable alerts** on the Alerts tab to allow browser notifications. For a real deployment, create an operator with `ADMIN_EMAIL=… ADMIN_PASSWORD=… npm run create-admin` instead of using the demo account.
@@ -180,7 +180,7 @@ Run from the repository root:
 | `VITE_PUBLIC_SITE_URL` | dev `:5173` | Public finder link used by "Public site" / "Open listing" actions |
 | `VITE_STAFF_SITE_URL` | dev `:5173/login` | Hospital staff sign-in link (optional) |
 
-Control-room accounts are created with `ADMIN_EMAIL` and `ADMIN_PASSWORD` using `npm --workspace server run create-admin` (or `npm run create-admin` from the server directory). The seeded demo account is `control@raahat.demo` / `Raahat@123`.
+Control-room accounts are created with `ADMIN_EMAIL` and `ADMIN_PASSWORD` using `npm --workspace server run create-admin` (or `npm run create-admin` from the server directory). The seeded demo account is `control@raahat.demo` / `Raahat#Control2026`.
 
 ## API reference
 

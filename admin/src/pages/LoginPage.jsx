@@ -5,7 +5,7 @@ import Brand from '../components/Brand.jsx';
 import { useAdmin } from '../context/AdminContext.jsx';
 import { PUBLIC_SITE_URL } from '../lib/config.js';
 
-const DEMO = { email: 'control@raahat.demo', password: 'Raahat@123' };
+const DEMO = { email: 'control@raahat.demo', password: 'Raahat#Control2026' };
 
 export default function LoginPage() {
   const { token, booting, login } = useAdmin();
