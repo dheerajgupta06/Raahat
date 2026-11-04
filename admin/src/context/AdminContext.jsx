@@ -150,6 +150,7 @@ export function AdminProvider({ children }) {
     socket.on('connect', () => {
       if (!active) return;
       setConnected(true);
+      setLiveTick((tick) => tick + 1);
       loadNotifications(token);
     });
     socket.on('disconnect', () => setConnected(false));
@@ -190,6 +191,34 @@ export function AdminProvider({ children }) {
     if (!token) return;
     refreshPendingApprovals(token);
   }, [token, liveTick, refreshPendingApprovals]);
+
+  const syncControlRoom = useCallback(
+    (activeToken = token) => {
+      if (!activeToken) return;
+      loadNotifications(activeToken);
+      setLiveTick((tick) => tick + 1);
+    },
+    [token, loadNotifications]
+  );
+
+  // Socket.io can drop on mobile networks, free-tier sleep or blocked WebSockets.
+  // Poll and refresh on resume so registrations never stay invisible in the queue.
+  useEffect(() => {
+    if (!token) return undefined;
+
+    const timer = window.setInterval(() => syncControlRoom(token), 30000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') syncControlRoom(token);
+    };
+
+    window.addEventListener('focus', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [token, syncControlRoom]);
 
   const markAllRead = useCallback(async () => {
     if (!token) return;

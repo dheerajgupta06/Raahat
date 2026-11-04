@@ -126,7 +126,7 @@ export default function Layout() {
                 }`}
               >
                 <Radio size={11} className={connected ? 'animate-pulse' : ''} />
-                {connected ? 'Live' : 'Reconnecting'}
+                {connected ? 'Live' : 'Polling'}
               </span>
 
               <NavLink to="/alerts" className="icon-btn" aria-label="Alerts">

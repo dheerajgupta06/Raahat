@@ -63,9 +63,9 @@ export default function OverviewPage() {
   const [error, setError] = useState('');
   const [docTarget, setDocTarget] = useState(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!token) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const result = await api.overview(token);
       setOverview(result.data);
@@ -73,13 +73,18 @@ export default function OverviewPage() {
     } catch (loadError) {
       setError(loadError.message || 'Could not load the control room');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
-    load();
-  }, [load, liveTick]);
+    load(false);
+  }, [load]);
+
+  useEffect(() => {
+    if (!liveTick) return;
+    load(true);
+  }, [liveTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stats = overview?.stats;
   const pendingQueue = (overview?.recentRegistrations || []).filter(
