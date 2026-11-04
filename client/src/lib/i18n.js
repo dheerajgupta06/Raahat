@@ -371,6 +371,9 @@ export const translations = {
     'dash.registrationMissing': 'No certificate',
     'dash.registrationMissingHint': 'No registration certificate is on file for this listing. Demo hospitals skip document checks.',
     'dash.registrationPendingHint': 'Raahat reviewers have not checked this certificate yet.',
+    'dash.approvalBannerTitle': 'Registration waiting for approval',
+    'dash.approvalBannerBody':
+      'Your certificate is with the Raahat team. This message disappears automatically once your hospital is approved.',
     'dash.viewDocument': 'View document',
     'dash.reviewNote': 'Review note',
     'dash.documentError': 'Could not open the registration document.',
@@ -829,6 +832,9 @@ export const translations = {
     'dash.registrationMissing': 'सर्टिफिकेट नहीं',
     'dash.registrationMissingHint': 'इस लिस्टिंग के लिए कोई रजिस्ट्रेशन सर्टिफिकेट सेव नहीं है। डेमो अस्पतालों में डॉक्यूमेंट जांच लागू नहीं है।',
     'dash.registrationPendingHint': 'Raahat टीम ने अभी इस सर्टिफिकेट की जांच नहीं की है।',
+    'dash.approvalBannerTitle': 'रजिस्ट्रेशन अप्रूवल का इंतज़ार',
+    'dash.approvalBannerBody':
+      'आपका सर्टिफिकेट Raahat टीम के पास है। अस्पताल अप्रूव होते ही यह संदेश अपने आप हट जाएगा।',
     'dash.viewDocument': 'डॉक्यूमेंट देखें',
     'dash.reviewNote': 'समीक्षा नोट',
     'dash.documentError': 'रजिस्ट्रेशन डॉक्यूमेंट नहीं खुल सका।',

@@ -233,6 +233,22 @@ export function DashboardPage() {
     if (!profileDirtyRef.current) setProfileDraft(makeProfileDraft(payload));
   });
 
+  const approvalPending = hospital?.registration?.status === 'pending';
+
+  useEffect(() => {
+    if (!auth?.token || !approvalPending) return undefined;
+    const timer = window.setInterval(() => {
+      api
+        .me(auth.token)
+        .then((response) => {
+          setAdmin(response.data.admin);
+          applyServerHospital(response.data.hospital);
+        })
+        .catch(() => {});
+    }, 30000);
+    return () => window.clearInterval(timer);
+  }, [auth?.token, approvalPending, applyServerHospital]);
+
   const updateBed = (key, field, value) => {
     const number = Math.max(0, Number(value) || 0);
     setBedDraft((prev) => ({
@@ -604,6 +620,16 @@ export function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {registration?.status === 'pending' ? (
+          <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-warn">
+            <Clock3 size={16} className="mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-bold">{t('dash.approvalBannerTitle')}</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed">{t('dash.approvalBannerBody')}</p>
+            </div>
+          </div>
+        ) : null}
 
         {hospital.isStale ? (
           <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-xs text-warn">
